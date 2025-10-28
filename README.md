@@ -172,3 +172,180 @@ include("platform-outbound")
     </Match>
 </FindBugsFilter>
 ```
+
+[build.gradle.kts](../platform-domain/build.gradle.kts)
+```kotlin
+plugins {
+    id("kotlin-conventions")
+    id("testing-conventions")
+//    id("dokka-conventions")
+//  id("publishing-conventions") // If everything was configured correctly, you could use it to publish the artifacts. But it is not working with Spring as I thought.
+    id("spring-conventions")
+    id("native-conventions")
+}
+
+dependencies {
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    implementation(libs.bundles.logging)
+    testImplementation(libs.bundles.kotest)
+}
+
+tasks.jar { enabled = true }
+tasks.bootJar { enabled = false }
+
+// Disable Spring Boot application tasks for library module
+tasks.named("bootBuildImage") { enabled = false }
+tasks.matching { it.name == "bootRun" }.configureEach { enabled = false }
+tasks.matching { it.name == "processAot" }.configureEach { enabled = false }
+tasks.matching { it.name == "processTestAot" }.configureEach { enabled = false }
+
+// Disable native compilation tasks for library module
+tasks.matching { it.name == "nativeBuild" }.configureEach { enabled = false }
+tasks.matching { it.name == "nativeCompile" }.configureEach { enabled = false }
+tasks.matching { it.name == "nativeTestCompile" }.configureEach { enabled = false }
+tasks.matching { it.name == "nativeTestBuild" }.configureEach { enabled = false }
+
+//dependencyManagement {
+//    imports {
+//        mavenBom(libs.springCloud.bom.get().toString())
+//        mavenBom(libs.aws.xray.bom.get().toString())
+//        mavenBom(libs.aws.sdk.bom.get().toString())
+//    }
+//}
+
+
+```
+[build.gradle.kts](../platform-lambda/build.gradle.kts)
+```kotlin
+plugins {
+    id("kotlin-conventions")
+    id("testing-conventions")
+//    id("dokka-conventions")
+//  id("publishing-conventions") // If everything was configured correctly, you could use it to publish the artifacts. But it is not working with Spring as I thought.
+    id("spring-conventions")
+    id("native-conventions")
+}
+
+dependencies {
+    implementation("io.github.crac:org-crac:0.1.3")
+    implementation("com.fasterxml.jackson.module", "jackson-module-kotlin")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
+    implementation(project(":platform-domain"))
+    implementation(project(":platform-outbound"))
+
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.cloud:spring-cloud-function-adapter-aws")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+
+    implementation(platform(libs.springCloudAwsDependencies.bom.get().toString()))
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-dynamodb")
+    implementation(libs.bundles.aws.lambda)
+
+    implementation("com.amazonaws:aws-xray-recorder-sdk-core")
+    implementation("com.amazonaws:aws-xray-recorder-sdk-apache-http")
+    implementation("com.amazonaws:aws-xray-recorder-sdk-aws-sdk")
+    implementation("com.amazonaws:aws-xray-recorder-sdk-aws-sdk-instrumentor")
+    implementation("com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2")
+
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom(libs.springCloud.bom.get().toString())
+        mavenBom(libs.aws.xray.bom.get().toString())
+        mavenBom(libs.aws.sdk.bom.get().toString())
+    }
+}
+
+graalvmNative {
+    binaries {
+        named("main") {
+            buildArgs.addAll(
+                "--enable-url-protocols=http",
+                "-H:+AddAllCharsets"
+            )
+        }
+    }
+}
+```
+[build.gradle.kts](../platform-outbound/build.gradle.kts)
+```kotlin
+/*
+ * Outbound Adapters Module - Infrastructure Implementations
+ *
+ * This module contains implementations of outbound ports:
+ * - DynamoDB repositories
+ * - Password encoder (BCrypt)
+ * - Token generator (JWT)
+ * - AWS clients configuration
+ */
+
+plugins {
+    id("kotlin-conventions")
+    id("spring-conventions")
+    id("testing-conventions")
+}
+
+dependencies {
+    // Module dependencies
+    implementation(project(":platform-domain"))
+
+    // Kotlin
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+
+    // Spring Boot
+    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.security:spring-security-crypto")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+
+    // AWS SDK for Kotlin
+    implementation(platform(libs.springCloudAwsDependencies.bom.get().toString()))
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-dynamodb")
+
+    // JWT
+    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+
+    // Testing
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.testcontainers:testcontainers")
+    testImplementation("org.testcontainers:localstack")
+    testImplementation("io.mockk:mockk:1.13.12")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom(libs.springCloud.bom.get().toString())
+        mavenBom(libs.aws.xray.bom.get().toString())
+        mavenBom(libs.aws.sdk.bom.get().toString())
+    }
+}
+
+// Disable Spring Boot tasks for library module
+tasks.matching { it.name == "bootJar" }.configureEach { enabled = false }
+tasks.matching { it.name == "bootBuildImage" }.configureEach { enabled = false }
+tasks.matching { it.name == "bootRun" }.configureEach { enabled = false }
+
+// Disable native compilation tasks for library module
+tasks.matching { it.name == "nativeBuild" }.configureEach { enabled = false }
+tasks.matching { it.name == "nativeCompile" }.configureEach { enabled = false }
+tasks.matching { it.name == "nativeTestCompile" }.configureEach { enabled = false }
+
+```
