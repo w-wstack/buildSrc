@@ -39,13 +39,13 @@ idea {
     module {
 
         testSources.from.addAll(
-            sourceSets["integrationTest"].output.classesDirs
+            sourceSets["integrationTest"].allSource.srcDirs
         )
         testSources.from.addAll(
-            sourceSets["acceptanceTest"].output.classesDirs
+            sourceSets["acceptanceTest"].allSource.srcDirs
         )
         testSources.from.addAll(
-            sourceSets["contractTest"].output.classesDirs
+            sourceSets["contractTest"].allSource.srcDirs
         )
 
     }
