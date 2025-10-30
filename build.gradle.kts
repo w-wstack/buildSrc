@@ -71,6 +71,10 @@ dependencies {
     implementation(libs.spring.dependencyManagementPlugin)
     implementation(libs.graalvm.buildtoolsNativeGradlePlugin)
 
+    // https://imperceptiblethoughts.com/shadow/
+    // Shadow plugin for creating fat/shaded JARs
+    implementation(libs.shadow.gradlePlugin)
+
     // https://detekt.dev/docs/gettingstarted/gradle/
     // A static code analyzer for Kotlin
 //    implementation(libs.detekt.gradlePlugin)
