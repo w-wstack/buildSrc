@@ -188,7 +188,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation(libs.bundles.logging)
     testImplementation(libs.bundles.kotest)
 }
@@ -233,12 +232,8 @@ dependencies {
     implementation("io.github.crac:org-crac:0.1.3")
     implementation("com.fasterxml.jackson.module", "jackson-module-kotlin")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
     implementation(project(":platform-domain"))
     implementation(project(":platform-outbound"))
 
@@ -306,8 +301,6 @@ dependencies {
 
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter")
