@@ -1,12 +1,15 @@
 //import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import kotlin.jvm.optionals.getOrNull
 
 plugins {
     id("java-conventions")
 
     // Apply the Kotlin JVM plugin to add support for Kotlin on the JVM.
     kotlin("jvm")
+
+    id("org.jlleitschuh.gradle.ktlint")
 
 }
 
@@ -73,6 +76,11 @@ kotlin {
 //        }
 //    )
 //}
+
+ktlint {
+    version.set(libs.findVersion("ktlint").getOrNull()?.toString())
+}
+
 
 dependencies {
     constraints {

@@ -79,6 +79,7 @@ dependencies {
     // A static code analyzer for Kotlin
 //    implementation(libs.detekt.gradlePlugin)
 
+    implementation(libs.ktlint.gradlePlugin)
     implementation(libs.spotbugs.gradlePlugin)
     implementation(libs.spotless.gradlePlugin)
     implementation(libs.testLogger.gradlePlugin)
