@@ -39,67 +39,68 @@ idea {
     module {
 
         testSources.from.addAll(
-            sourceSets["integrationTest"].allSource.srcDirs
+            sourceSets["integrationTest"].allSource.srcDirs,
         )
         testSources.from.addAll(
-            sourceSets["acceptanceTest"].allSource.srcDirs
+            sourceSets["acceptanceTest"].allSource.srcDirs,
         )
         testSources.from.addAll(
-            sourceSets["contractTest"].allSource.srcDirs
+            sourceSets["contractTest"].allSource.srcDirs,
         )
-
     }
 }
 
-//configurations["integrationTestImplementation"].extendsFrom(configurations.testImplementation.get())
-//configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
+// configurations["integrationTestImplementation"].extendsFrom(configurations.testImplementation.get())
+// configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
 
-val integrationTestTask = tasks.register<Test>("integrationTest") {
-    description = "Runs integration tests."
-    group = JavaBasePlugin.VERIFICATION_GROUP
+val integrationTestTask =
+    tasks.register<Test>("integrationTest") {
+        description = "Runs integration tests."
+        group = JavaBasePlugin.VERIFICATION_GROUP
 
-    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
-    classpath = sourceSets["integrationTest"].runtimeClasspath
+        testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+        classpath = sourceSets["integrationTest"].runtimeClasspath
 
-    useJUnitPlatform()
-    testLogging {
-        events = setOf(FAILED)
-        exceptionFormat = FULL
+        useJUnitPlatform()
+        testLogging {
+            events = setOf(FAILED)
+            exceptionFormat = FULL
+        }
+
+        mustRunAfter(tasks["test"])
     }
-
-    mustRunAfter(tasks["test"])
-}
 configurations["integrationTestImplementation"].extendsFrom(configurations.testImplementation.get())
 configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
 
-
-val acceptanceTestTask = tasks.register<Test>("acceptanceTest") {
-    description = "Runs all tests."
-    group = JavaBasePlugin.VERIFICATION_GROUP
-    testClassesDirs = sourceSets["acceptanceTest"].output.classesDirs
-    classpath = sourceSets["acceptanceTest"].runtimeClasspath
-    useJUnitPlatform()
-    testLogging {
-        events = setOf(FAILED)
-        exceptionFormat = FULL
+val acceptanceTestTask =
+    tasks.register<Test>("acceptanceTest") {
+        description = "Runs all tests."
+        group = JavaBasePlugin.VERIFICATION_GROUP
+        testClassesDirs = sourceSets["acceptanceTest"].output.classesDirs
+        classpath = sourceSets["acceptanceTest"].runtimeClasspath
+        useJUnitPlatform()
+        testLogging {
+            events = setOf(FAILED)
+            exceptionFormat = FULL
+        }
+        mustRunAfter(integrationTestTask)
     }
-    mustRunAfter(integrationTestTask)
-}
 configurations["acceptanceTestImplementation"].extendsFrom(configurations.testImplementation.get())
 configurations["acceptanceTestRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
 
-val contractTestTask = tasks.register<Test>("contractTest") {
-    description = "Runs contract tests."
-    group = JavaBasePlugin.VERIFICATION_GROUP
-    testClassesDirs = sourceSets["contractTest"].output.classesDirs
-    classpath = sourceSets["contractTest"].runtimeClasspath
-    useJUnitPlatform()
-    testLogging {
-        events = setOf(FAILED)
-        exceptionFormat = FULL
-    }
+val contractTestTask =
+    tasks.register<Test>("contractTest") {
+        description = "Runs contract tests."
+        group = JavaBasePlugin.VERIFICATION_GROUP
+        testClassesDirs = sourceSets["contractTest"].output.classesDirs
+        classpath = sourceSets["contractTest"].runtimeClasspath
+        useJUnitPlatform()
+        testLogging {
+            events = setOf(FAILED)
+            exceptionFormat = FULL
+        }
 //    mustRunAfter(contractTestTask)
-}
+    }
 
 configurations["contractTestImplementation"].extendsFrom(configurations.testImplementation.get())
 configurations["contractTestRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
@@ -108,21 +109,25 @@ jacoco {
     toolVersion = libs.findVersion("jacocoVersion").get().toString()
 }
 tasks.jacocoTestReport {
-    executionData(fileTree(projectDir) {
-        include("/build/**/jacoco/*.exec")
-    })
+    executionData(
+        fileTree(projectDir) {
+            include("/build/**/jacoco/*.exec")
+        },
+    )
     reports {
-        xml.required.set(false)
+        xml.required.set(true)
         csv.required.set(false)
-        html.required.set(false)
-        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco"))
+        html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/coverage"))
     }
     mustRunAfter(tasks["test"])
 }
 tasks.jacocoTestCoverageVerification {
-    executionData(fileTree(projectDir) {
-        include("/build/**/jacoco/*.exec")
-    })
+    executionData(
+        fileTree(projectDir) {
+            include("/build/**/jacoco/*.exec")
+        },
+    )
     violationRules {
         rule {
             limit {
@@ -130,19 +135,21 @@ tasks.jacocoTestCoverageVerification {
             }
         }
     }
-    classDirectories.setFrom(sourceSets.main.get().output.asFileTree.matching {
-
-    })
+    classDirectories.setFrom(
+        sourceSets.main.get().output.asFileTree.matching {
+        },
+    )
     mustRunAfter(tasks.jacocoTestReport)
 }
 
-val buildWithCoverage = tasks.register("buildWithCoverage") {
-    group = JavaBasePlugin.VERIFICATION_GROUP
-    dependsOn("build", "jacocoTestReport", "jacocoTestCoverageVerification")
-    description = "Runs all tests with coverage."
-    val jacocoTestReport = tasks.findByName("jacocoTestReport")
-    jacocoTestReport?.mustRunAfter(tasks.build)
-}
+val buildWithCoverage =
+    tasks.register("buildWithCoverage") {
+        group = JavaBasePlugin.BUILD_TASK_NAME
+        dependsOn("build", "jacocoTestReport", "jacocoTestCoverageVerification")
+        description = "Runs all tests with coverage."
+        val jacocoTestReport = tasks.findByName("jacocoTestReport")
+        jacocoTestReport?.mustRunAfter(tasks.build)
+    }
 
 spotbugs {
     ignoreFailures.set(false)
@@ -153,7 +160,7 @@ spotbugs {
 }
 
 tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
-    reports{
+    reports {
         maybeCreate("xml").required.set(false)
         maybeCreate("html").required.set(false)
     }
@@ -166,8 +173,6 @@ spotless {
     }
 }
 
-
-
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
@@ -178,5 +183,4 @@ dependencies {
     "integrationTestImplementation"(project)
     "acceptanceTestImplementation"(project)
     "contractTestImplementation"(project)
-
 }
